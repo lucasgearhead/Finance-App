@@ -112,23 +112,25 @@ const FinancialTracker = () => {
   }, []);
 
   useEffect(() => {
-    const calculateTotals = () => {
-      const incomeTotal = records
-        .filter((record) => record.type === "income")
-        .reduce((acc, record) => acc + parseFloat(record.value), 0);
-      setIncomeTotal(incomeTotal);
+    setTimeout(() => {
+      const calculateTotals = () => {
+        const incomeTotal = records
+          .filter((record) => record.type === "income")
+          .reduce((acc, record) => acc + parseFloat(record.value), 0);
+        setIncomeTotal(incomeTotal);
 
-      const expenseTotal = records
-        .filter((record) => record.type === "expense")
-        .reduce((acc, record) => acc + parseFloat(record.value), 0);
-      setExpenseTotal(expenseTotal);
+        const expenseTotal = records
+          .filter((record) => record.type === "expense")
+          .reduce((acc, record) => acc + parseFloat(record.value), 0);
+        setExpenseTotal(expenseTotal);
 
-      const newBalance = incomeTotal - expenseTotal;
-      setWalletBalance(newBalance);
-    };
+        const newBalance = incomeTotal - expenseTotal;
+        setWalletBalance(newBalance);
+      };
 
-    calculateTotals();
-    localStorage.setItem("financialRecords", JSON.stringify(records));
+      calculateTotals();
+      localStorage.setItem("financialRecords", JSON.stringify(records));
+    }, 0);
   }, [records]);
 
   const addRecord = () => {
