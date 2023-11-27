@@ -1,19 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const FinancialTracker = () => {
-  // Estado para armazenar os registros
   const [records, setRecords] = useState([]);
-  // Estado para armazenar os dados do novo registro
   const [newRecord, setNewRecord] = useState({
     name: "",
     value: "",
-    type: "income", // Pode ser 'income' ou 'expense'
-    paymentMethod: "cash", // Pode ser 'cash', 'card' ou 'pix'
+    type: "income",
+    paymentMethod: "cash",
   });
 
-  // Função para adicionar um novo registro
+  useEffect(() => {
+    // Carregar registros do localStorage ao montar o componente
+    const storedRecords =
+      JSON.parse(localStorage.getItem("financialRecords")) || [];
+    setRecords(storedRecords);
+  }, []);
+
+  useEffect(() => {
+    // Atualizar localStorage sempre que o estado de registros for alterado
+    localStorage.setItem("financialRecords", JSON.stringify(records));
+  }, [records]);
+
   const addRecord = () => {
-    // Validar se todos os campos estão preenchidos
     if (
       newRecord.name &&
       newRecord.value &&
@@ -21,7 +29,6 @@ const FinancialTracker = () => {
       newRecord.paymentMethod
     ) {
       setRecords([...records, newRecord]);
-      // Limpar os campos do novo registro
       setNewRecord({
         name: "",
         value: "",
@@ -33,17 +40,33 @@ const FinancialTracker = () => {
     }
   };
 
-  // Função para excluir um registro
   const deleteRecord = (index) => {
     const updatedRecords = [...records];
     updatedRecords.splice(index, 1);
     setRecords(updatedRecords);
   };
 
+  const calculateTotal = (type) => {
+    return records
+      .filter((record) => record.type === type)
+      .reduce((total, record) => total + parseFloat(record.value), 0)
+      .toFixed(2);
+  };
+
+  const totalIncome = calculateTotal("income");
+  const totalExpense = calculateTotal("expense");
+  const walletBalance = (totalIncome - totalExpense).toFixed(2);
+  const balanceColor = walletBalance >= 0 ? "green" : "red";
+
   return (
-    <div style={{ display: "flex", justifyContent: "space-around" }}>
-      {/* Coluna de Registro */}
-      <div>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-around",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <div style={{ borderRight: "1px solid #ccc", padding: "10px" }}>
         <h2>Registrar</h2>
         <label>
           Nome:
@@ -97,8 +120,7 @@ const FinancialTracker = () => {
         <button onClick={addRecord}>Adicionar</button>
       </div>
 
-      {/* Coluna de Entradas */}
-      <div>
+      <div style={{ padding: "10px" }}>
         <h2>Entradas</h2>
         {records.map((record, index) =>
           record.type === "income" ? (
@@ -108,10 +130,10 @@ const FinancialTracker = () => {
             </div>
           ) : null
         )}
+        <div>Total de Entradas: R${totalIncome}</div>
       </div>
 
-      {/* Coluna de Despesas */}
-      <div>
+      <div style={{ paddingLeft: "10px" }}>
         <h2>Despesas</h2>
         {records.map((record, index) =>
           record.type === "expense" ? (
@@ -121,6 +143,16 @@ const FinancialTracker = () => {
             </div>
           ) : null
         )}
+        <div>Total de Despesas: R${totalExpense}</div>
+      </div>
+
+      <div style={{ marginLeft: "10px", padding: "10px" }}>
+        <h2>Saldo</h2>
+        <div
+          style={{ color: balanceColor, fontSize: "20px", fontWeight: "bold" }}
+        >
+          R${walletBalance}
+        </div>
       </div>
     </div>
   );
