@@ -1,34 +1,14 @@
+// FinancialTracker.js
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-};
-
-const getPaymentMethodInfo = (method) => {
-  const paymentMethods = {
-    cash: { name: "Dinheiro", icon: "💵" },
-    card: { name: "Cartão", icon: "💳" },
-    pix: { name: "PIX", icon: "📱" },
-  };
-
-  return paymentMethods[method] || { name: method, icon: "" };
-};
+import RecordForm from "./components/RecordForm";
+import RecordsList from "./components/RecordsList";
+import Totals from "./components/Totals";
+import WalletBalance from "./components/WalletBalance";
 
 const FinancialTracker = () => {
   const [records, setRecords] = useState([]);
-  const [newRecord, setNewRecord] = useState({
-    name: "",
-    value: "",
-    type: "income",
-    paymentMethod: "cash",
-  });
   const [walletBalance, setWalletBalance] = useState(0);
-  const [incomeTotal, setIncomeTotal] = useState(0);
-  const [expenseTotal, setExpenseTotal] = useState(0);
 
   useEffect(() => {
     const storedRecords =
@@ -42,12 +22,10 @@ const FinancialTracker = () => {
         const incomeTotal = records
           .filter((record) => record.type === "income")
           .reduce((acc, record) => acc + parseFloat(record.value), 0);
-        setIncomeTotal(incomeTotal);
 
         const expenseTotal = records
           .filter((record) => record.type === "expense")
           .reduce((acc, record) => acc + parseFloat(record.value), 0);
-        setExpenseTotal(expenseTotal);
 
         const newBalance = incomeTotal - expenseTotal;
         setWalletBalance(newBalance);
@@ -58,23 +36,8 @@ const FinancialTracker = () => {
     }, 0);
   }, [records]);
 
-  const addRecord = () => {
-    if (
-      newRecord.name &&
-      newRecord.value &&
-      newRecord.type &&
-      newRecord.paymentMethod
-    ) {
-      setRecords([...records, newRecord]);
-      setNewRecord({
-        name: "",
-        value: "",
-        type: "income",
-        paymentMethod: "cash",
-      });
-    } else {
-      alert("Por favor, preencha todos os campos.");
-    }
+  const addRecord = (newRecord) => {
+    setRecords([...records, newRecord]);
   };
 
   const deleteRecord = (index) => {
@@ -83,116 +46,38 @@ const FinancialTracker = () => {
     setRecords(updatedRecords);
   };
 
-  const handleValueChange = (e) => {
-    const floatValue = parseFloat(e.target.value.replace(/[^\d]/g, "")) / 100;
-    setNewRecord({ ...newRecord, value: floatValue });
-  };
-
   return (
     <Wrapper>
-      <Column>
-        <Form>
-          <h2>Registrar</h2>
-          <label>
-            Nome:
-            <input
-              type="text"
-              value={newRecord.name}
-              onChange={(e) =>
-                setNewRecord({ ...newRecord, name: e.target.value })
-              }
-            />
-          </label>
-          <label>
-            Valor:
-            <input
-              type="text"
-              value={newRecord.value}
-              onChange={handleValueChange}
-              placeholder="0,00"
-            />
-          </label>
-          <label>
-            Tipo:
-            <select
-              value={newRecord.type}
-              onChange={(e) =>
-                setNewRecord({ ...newRecord, type: e.target.value })
-              }
-            >
-              <option value="income">Entrada</option>
-              <option value="expense">Despesa</option>
-            </select>
-          </label>
-          <label>
-            Método de pagamento:
-            <select
-              value={newRecord.paymentMethod}
-              onChange={(e) =>
-                setNewRecord({ ...newRecord, paymentMethod: e.target.value })
-              }
-            >
-              <option value="cash">Dinheiro</option>
-              <option value="card">Cartão</option>
-              <option value="pix">PIX</option>
-            </select>
-          </label>
-          <button onClick={addRecord}>Adicionar</button>
-        </Form>
+      <Column className="record">
+        <RecordForm onAddRecord={addRecord} />
+        <WalletBalance balance={walletBalance} />
       </Column>
 
       <Column>
         <h2>Entradas</h2>
-        <RecordsList>
-          {records.map((record, index) =>
-            record.type === "income" ? (
-              <li key={index}>
-                {formatCurrency(record.value)} - {record.name} -{" "}
-                {getPaymentMethodInfo(record.paymentMethod).name}{" "}
-                {getPaymentMethodInfo(record.paymentMethod).icon}
-                <button onClick={() => deleteRecord(index)}>Excluir</button>
-              </li>
-            ) : null
-          )}
-        </RecordsList>
-        <Totals>
-          <p>Total de Entradas: {formatCurrency(incomeTotal.toFixed(2))}</p>
-        </Totals>
-      </Column>
-      <Column>
-        <h2>Despesas</h2>
-        <RecordsList>
-          {records.map((record, index) =>
-            record.type === "expense" ? (
-              <li key={index}>
-                {formatCurrency(record.value)} - {record.name} -{" "}
-                {getPaymentMethodInfo(record.paymentMethod).name}{" "}
-                {getPaymentMethodInfo(record.paymentMethod).icon}
-                <button onClick={() => deleteRecord(index)}>Excluir</button>
-              </li>
-            ) : null
-          )}
-        </RecordsList>
-        <Totals>
-          <p>Total de Despesas: {formatCurrency(incomeTotal.toFixed(2))}</p>
-        </Totals>
+        <RecordsList
+          records={records}
+          onDeleteRecord={deleteRecord}
+          type="income"
+        />
+        <Totals records={records} type="income" />
       </Column>
 
       <Column>
-        <WalletBalance balance={walletBalance}>
-          <h2>Saldo em Carteira</h2>
-          <p>{formatCurrency(walletBalance.toFixed(2))}</p>
-        </WalletBalance>
+        <h2>Despesas</h2>
+        <RecordsList
+          records={records}
+          onDeleteRecord={deleteRecord}
+          type="expense"
+        />
+        <Totals records={records} type="expense" />
       </Column>
     </Wrapper>
   );
 };
 
-export default FinancialTracker;
-
 const Wrapper = styled.div`
   display: flex;
-  justify-content: space-around;
   margin-top: 20px;
 `;
 
@@ -203,81 +88,13 @@ const Column = styled.div`
   border-radius: 8px;
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-`;
+  overflow-y: auto;
 
-const Form = styled.div`
-  h2 {
-    margin-bottom: 10px;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 10px;
-
-    input,
-    select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-    }
-  }
-
-  button {
-    background-color: #4caf50;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:hover {
-      background-color: #45a049;
-    }
+  &:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
   }
 `;
 
-const RecordsList = styled.ul`
-  list-style: none;
-  padding: 0;
-
-  li {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    margin-top: -1px;
-    padding: 10px;
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-
-    button {
-      background-color: #ff0000;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-
-      &:hover {
-        background-color: #cc0000;
-      }
-    }
-  }
-`;
-
-const Totals = styled.div`
-  margin-top: 20px;
-  p {
-    font-weight: bold;
-  }
-`;
-
-const WalletBalance = styled.div`
-  h2 {
-    margin-bottom: 10px;
-  }
-
-  p {
-    font-size: 24px;
-    font-weight: bold;
-    color: ${(props) => (props.balance >= 0 ? "green" : "red")};
-  }
-`;
+export default FinancialTracker;
