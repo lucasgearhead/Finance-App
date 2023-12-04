@@ -19,7 +19,6 @@ const Totals = ({ records, type }) => {
 };
 
 const TotalsContainer = styled.div`
-  margin-top: 20px;
   p {
     font-weight: bold;
   }

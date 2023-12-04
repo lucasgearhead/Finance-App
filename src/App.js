@@ -48,7 +48,14 @@ const FinancialTracker = () => {
 
   return (
     <Wrapper>
-      <Column className="record">
+      <Column
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          paddingBottom: "10%",
+        }}
+      >
         <RecordForm onAddRecord={addRecord} />
         <WalletBalance balance={walletBalance} />
       </Column>
@@ -78,15 +85,17 @@ const FinancialTracker = () => {
 
 const Wrapper = styled.div`
   display: flex;
-  margin-top: 20px;
+  margin: 0;
+  background-color: #fff;
+  min-height: 97vh;
 `;
 
 const Column = styled.div`
   flex: 1;
   padding: 20px;
-  border: 1px solid #ddd;
+  border: 1px solid #fff;
   border-radius: 8px;
-  background-color: #fff;
+  background-color: #d4d4d4;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
 

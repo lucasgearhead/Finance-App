@@ -19,8 +19,15 @@ const WalletBalance = ({ balance }) => (
 );
 
 const BalanceContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  width: 100%;
+
   h2 {
     margin-bottom: 10px;
+    width: 100%;
+    text-align: center;
   }
 `;
 

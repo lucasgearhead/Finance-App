@@ -11,8 +11,19 @@ const RecordForm = ({ onAddRecord }) => {
   });
 
   const handleValueChange = (e) => {
-    const floatValue = parseFloat(e.target.value.replace(/[^\d]/g, "")) / 100;
-    setNewRecord({ ...newRecord, value: floatValue });
+    const inputValue = e.target.value;
+
+    // Substitui a vírgula por ponto para permitir valores decimais
+    const numericValue = inputValue.replace(/,/g, ".");
+
+    // Verifica se a entrada corresponde ao formato desejado
+    if (/^\d+(\.\d{0,2})?$/.test(numericValue)) {
+      // Atualiza o estado
+      setNewRecord({ ...newRecord, value: numericValue });
+    } else {
+      // Exibe um alerta se a entrada for inválida
+      alert("Por favor, insira um número válido.");
+    }
   };
 
   const handleInputChange = (field, value) => {
